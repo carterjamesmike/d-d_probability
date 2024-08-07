@@ -6,7 +6,7 @@ const DamageSimulator = ({ diceCount, diceType, damageModifier }) => {
   const [maxDamage, setMaxDamage] = useState(0);
   const [minPossible, setMinPossible] = useState(0);
   const [maxPossible, setMaxPossible] = useState(0);
-  const [critMax, setCritMax] = useState(0);
+
 
   const simulateRoll = () => {
     return Math.floor(Math.random() * diceType) + 1;
