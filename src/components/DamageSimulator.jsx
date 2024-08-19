@@ -1,4 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 const DamageSimulator = ({ diceCount, diceType, damageModifier }) => {
   const [averageDamage, setAverageDamage] = useState(0);
@@ -6,7 +15,7 @@ const DamageSimulator = ({ diceCount, diceType, damageModifier }) => {
   const [maxDamage, setMaxDamage] = useState(0);
   const [minPossible, setMinPossible] = useState(0);
   const [maxPossible, setMaxPossible] = useState(0);
-
+  const [damageData, setDamageData] = useState([]);
 
   const simulateRoll = () => {
     return Math.floor(Math.random() * diceType) + 1;
@@ -24,6 +33,7 @@ const DamageSimulator = ({ diceCount, diceType, damageModifier }) => {
     let totalDamage = 0;
     let minDmg = Infinity;
     let maxDmg = -Infinity;
+    const damageFrequency = {};
 
     for (let i = 0; i < simulations; i++) {
       const isCritical = Math.random() < 0.05; // 5% chance of critical hit
@@ -31,13 +41,21 @@ const DamageSimulator = ({ diceCount, diceType, damageModifier }) => {
       totalDamage += damage;
       minDmg = Math.min(minDmg, damage);
       maxDmg = Math.max(maxDmg, damage);
+      damageFrequency[damage] = (damageFrequency[damage] || 0) + 1;
     }
 
     setAverageDamage(Number((totalDamage / simulations).toFixed(2)));
     setMinDamage(minDmg);
     setMaxDamage(maxDmg);
     setMinPossible(diceCount + damageModifier);
-    setMaxPossible((diceCount * 2) * diceType + damageModifier);
+    setMaxPossible(diceCount * 2 * diceType + damageModifier);
+
+    const newDamageData = Object.entries(damageFrequency).map(([damage, frequency]) => ({
+      damage: Number(damage),
+      frequency,
+    }));
+    newDamageData.sort((a, b) => a.damage - b.damage);
+    setDamageData(newDamageData);
   }, [diceCount, diceType, damageModifier]);
 
   return (
@@ -48,6 +66,26 @@ const DamageSimulator = ({ diceCount, diceType, damageModifier }) => {
       <p>Maximum Damage: {maxDamage}</p>
       <p>Minimum Possible: {minPossible}</p>
       <p>Maximum Possible: {maxPossible}</p>
+
+      <div style={{ width: '100%', height: 400 }}>
+        <ResponsiveContainer>
+          <AreaChart
+            data={damageData}
+            margin={{
+              top: 10,
+              right: 30,
+              left: 0,
+              bottom: 0,
+            }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="damage" />
+            <YAxis />
+            <Tooltip />
+            <Area type="monotone" dataKey="frequency" stroke="#8884d8" fill="#8884d8" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };

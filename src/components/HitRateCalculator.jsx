@@ -1,6 +1,17 @@
-import React, { useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import DamageSimulator from './DamageSimulator';
+import React, { useState } from "react";
+import {
+  AreaChart,
+  Area,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import DamageSimulator from "./DamageSimulator";
 
 const HitRateCalculator = () => {
   const [attackCount, setAttackCount] = useState(1);
@@ -36,7 +47,7 @@ const HitRateCalculator = () => {
   };
 
   const binomialProbability = (n, k, p) => {
-    return combination(n, k) * (p ** k) * ((1 - p) ** (n - k));
+    return combination(n, k) * p ** k * (1 - p) ** (n - k);
   };
 
   const combination = (n, k) => {
@@ -55,17 +66,17 @@ const HitRateCalculator = () => {
       return {
         ac,
         ...Array.from({ length: attackCount }, (_, j) => ({
-          [`hitRate${j + 1}`]: calculateCumulativeHitRate(ac, j + 1)
-        })).reduce((acc, val) => ({ ...acc, ...val }), {})
+          [`hitRate${j + 1}`]: calculateCumulativeHitRate(ac, j + 1),
+        })).reduce((acc, val) => ({ ...acc, ...val }), {}),
       };
     });
   };
 
   const calculateCritChance = () => {
     if (advantage) {
-      return 1 - (19/20) ** 2;
+      return 1 - (19 / 20) ** 2;
     } else if (disadvantage) {
-      return (1/20) ** 2;
+      return (1 / 20) ** 2;
     } else {
       return 0.05;
     }
@@ -81,26 +92,50 @@ const HitRateCalculator = () => {
     setAdvantage(false);
   };
 
-  const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088fe'];
+  const colors = [
+    "#8884d8",
+    "#82ca9d",
+    "#ffc658",
+    "#ff7300",
+    "#0088fe",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+    "#a4de6c",
+    "#d0ed57",
+  ];
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">D&D 5e Cumulative Multi-Attack Hit Rate Calculator</h2>
+      <h3>
+        <a href="/">Home</a>
+      </h3>
+      <h2 className="text-2xl font-bold mb-4">
+        D&D 5e Cumulative Multi-Attack Hit Rate Calculator
+      </h2>
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
-          <label htmlFor="attackCount" className="block">Number of Attacks:</label>
+          <label htmlFor="attackCount" className="block">
+            Number of Attacks:
+          </label>
           <input
             type="number"
             id="attackCount"
             value={attackCount}
-            onChange={(e) => setAttackCount(Math.max(1, Math.min(5, parseInt(e.target.value) || 1)))}
+            onChange={(e) =>
+              setAttackCount(
+                Math.max(1, Math.min(10, parseInt(e.target.value) || 1))
+              )
+            }
             min="1"
-            max="5"
+            max="10"
             className="border rounded px-2 py-1 w-full"
           />
         </div>
         <div>
-          <label htmlFor="attackModifier" className="block">Attack Modifier:</label>
+          <label htmlFor="attackModifier" className="block">
+            Attack Modifier:
+          </label>
           <input
             type="number"
             id="attackModifier"
@@ -110,31 +145,41 @@ const HitRateCalculator = () => {
           />
         </div>
         <div>
-          <label htmlFor="diceType" className="block">Dice Type:</label>
+          <label htmlFor="diceType" className="block">
+            Dice Type:
+          </label>
           <select
             id="diceType"
             value={diceType}
             onChange={(e) => setDiceType(parseInt(e.target.value))}
             className="border rounded px-2 py-1 w-full"
           >
-            {[4, 6, 8, 10, 12].map(die => (
-              <option key={die} value={die}>d{die}</option>
+            {[4, 6, 8, 10, 12].map((die) => (
+              <option key={die} value={die}>
+                d{die}
+              </option>
             ))}
           </select>
         </div>
         <div>
-          <label htmlFor="diceCount" className="block">Number of Dice:</label>
+          <label htmlFor="diceCount" className="block">
+            Number of Dice:
+          </label>
           <input
             type="number"
             id="diceCount"
             value={diceCount}
-            onChange={(e) => setDiceCount(Math.max(1, parseInt(e.target.value) || 1))}
+            onChange={(e) =>
+              setDiceCount(Math.max(1, parseInt(e.target.value) || 1))
+            }
             min="1"
             className="border rounded px-2 py-1 w-full"
           />
         </div>
         <div>
-          <label htmlFor="damageModifier" className="block">Damage Modifier:</label>
+          <label htmlFor="damageModifier" className="block">
+            Damage Modifier:
+          </label>
           <input
             type="number"
             id="damageModifier"
@@ -146,24 +191,41 @@ const HitRateCalculator = () => {
         <div className="col-span-2 flex justify-start space-x-4">
           <button
             onClick={toggleAdvantage}
-            className={`px-4 py-2 rounded ${advantage ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
+            className={`px-4 py-2 rounded ${
+              advantage ? "bg-green-500 text-white" : "bg-gray-200"
+            }`}
           >
             Advantage
           </button>
           <button
             onClick={toggleDisadvantage}
-            className={`px-4 py-2 rounded ${disadvantage ? 'bg-red-500 text-white' : 'bg-gray-200'}`}
+            className={`px-4 py-2 rounded ${
+              disadvantage ? "bg-red-500 text-white" : "bg-gray-200"
+            }`}
           >
             Disadvantage
           </button>
         </div>
       </div>
-      
+
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={generateData()}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="ac" label={{ value: 'Armor Class', position: 'insideBottom', offset: -5 }} />
-          <YAxis label={{ value: 'Cumulative Hit Rate (%)', angle: -90, position: 'insideLeft' }} />
+          <XAxis
+            dataKey="ac"
+            label={{
+              value: "Armor Class",
+              position: "insideBottom",
+              offset: -5,
+            }}
+          />
+          <YAxis
+            label={{
+              value: "Cumulative Hit Rate (%)",
+              angle: -90,
+              position: "insideLeft",
+            }}
+          />
           <Tooltip />
           <Legend />
           {Array.from({ length: attackCount }, (_, i) => (
@@ -177,6 +239,36 @@ const HitRateCalculator = () => {
           ))}
         </LineChart>
       </ResponsiveContainer>
+
+      {/* <ResponsiveContainer width="100%" height={400}>
+        <AreaChart>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis
+            dataKey="damage"
+            label={{
+              value: "Damage",
+              position: "insideBottom",
+              offset: -5,
+            }}
+          />
+          <YAxis
+            label={{
+              value: "Frequency",
+              angle: -90,
+              position: "insideLeft",
+            }}
+          />
+          <Tooltip />
+          <Legend />
+          <Area
+            type="monotone"
+            dataKey="frequency"
+            stroke="#8884d8"
+            fill="#8884d8"
+          />
+        </AreaChart>
+      </ResponsiveContainer> */}
+
       <DamageSimulator
         diceCount={diceCount}
         diceType={diceType}
