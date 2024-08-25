@@ -22,6 +22,30 @@ const HitRateCalculator = () => {
   const [advantage, setAdvantage] = useState(false);
   const [disadvantage, setDisadvantage] = useState(false);
 
+  const handleInputChange = (setter) => (e) => {
+    const value = e.target.value;
+    if (value === "" || value === "-") {
+      setter(value);
+    } else {
+      const parsedValue = parseInt(value, 10);
+      if (!isNaN(parsedValue)) {
+        setter(parsedValue);
+      }
+    }
+  };
+
+  const handleBlur = (setter, minValue, maxValue) => () => {
+    setter((prev) => {
+      if (prev === "" || prev === "-" || isNaN(prev)) {
+        return minValue || 0;
+      }
+      const value = parseInt(prev, 10);
+      if (minValue !== undefined && value < minValue) return minValue;
+      if (maxValue !== undefined && value > maxValue) return maxValue;
+      return value;
+    });
+  };
+
   const calculateHitRate = (ac) => {
     const hitThreshold = ac - attackModifier;
     let hitChance = Math.min(Math.max((21 - hitThreshold) / 20, 0.05), 0.95);
@@ -122,11 +146,8 @@ const HitRateCalculator = () => {
             type="number"
             id="attackCount"
             value={attackCount}
-            onChange={(e) =>
-              setAttackCount(
-                Math.max(1, Math.min(10, parseInt(e.target.value) || 1))
-              )
-            }
+            onChange={handleInputChange(setAttackCount)}
+            onBlur={handleBlur(setAttackCount, 1, 10)}
             min="1"
             max="10"
             className="border rounded px-2 py-1 w-full"
@@ -140,7 +161,8 @@ const HitRateCalculator = () => {
             type="number"
             id="attackModifier"
             value={attackModifier}
-            onChange={(e) => setAttackModifier(parseInt(e.target.value) || 0)}
+            onChange={handleInputChange(setAttackModifier)}
+            onBlur={handleBlur(setAttackModifier)}
             className="border rounded px-2 py-1 w-full"
           />
         </div>
@@ -169,9 +191,8 @@ const HitRateCalculator = () => {
             type="number"
             id="diceCount"
             value={diceCount}
-            onChange={(e) =>
-              setDiceCount(Math.max(1, parseInt(e.target.value) || 1))
-            }
+            onChange={handleInputChange(setDiceCount)}
+            onBlur={handleBlur(setDiceCount, 1)}
             min="1"
             className="border rounded px-2 py-1 w-full"
           />
@@ -184,7 +205,8 @@ const HitRateCalculator = () => {
             type="number"
             id="damageModifier"
             value={damageModifier}
-            onChange={(e) => setDamageModifier(parseInt(e.target.value) || 0)}
+            onChange={handleInputChange(setDamageModifier)}
+            onBlur={handleBlur(setDamageModifier)}
             className="border rounded px-2 py-1 w-full"
           />
         </div>
@@ -192,7 +214,7 @@ const HitRateCalculator = () => {
           <button
             onClick={toggleAdvantage}
             className={`px-4 py-2 rounded ${
-              advantage ? "bg-green-500 text-white" : "bg-gray-200"
+              advantage ? "bg-green-500 text-white" : "bg-gray-600"
             }`}
           >
             Advantage
@@ -200,7 +222,7 @@ const HitRateCalculator = () => {
           <button
             onClick={toggleDisadvantage}
             className={`px-4 py-2 rounded ${
-              disadvantage ? "bg-red-500 text-white" : "bg-gray-200"
+              disadvantage ? "bg-red-500 text-white" : "bg-gray-600"
             }`}
           >
             Disadvantage
@@ -239,35 +261,6 @@ const HitRateCalculator = () => {
           ))}
         </LineChart>
       </ResponsiveContainer>
-
-      {/* <ResponsiveContainer width="100%" height={400}>
-        <AreaChart>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="damage"
-            label={{
-              value: "Damage",
-              position: "insideBottom",
-              offset: -5,
-            }}
-          />
-          <YAxis
-            label={{
-              value: "Frequency",
-              angle: -90,
-              position: "insideLeft",
-            }}
-          />
-          <Tooltip />
-          <Legend />
-          <Area
-            type="monotone"
-            dataKey="frequency"
-            stroke="#8884d8"
-            fill="#8884d8"
-          />
-        </AreaChart>
-      </ResponsiveContainer> */}
 
       <DamageSimulator
         diceCount={diceCount}
