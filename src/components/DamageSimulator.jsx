@@ -61,9 +61,9 @@ const DamageSimulator = ({ diceCount, diceType, damageModifier }) => {
   return (
     <div className="mt-4 p-4 border rounded">
       <h3 className="text-xl font-bold mb-2">Damage Simulation (100 rolls)</h3>
-      <p>Average Damage: {averageDamage}</p>
-      <p>Minimum Damage: {minDamage}</p>
-      <p>Maximum Damage: {maxDamage}</p>
+      <p>Average Rolled: {averageDamage}</p>
+      <p>Minimum Rolled: {minDamage}</p>
+      <p>Maximum Rolled: {maxDamage}</p>
       <p>Minimum Possible: {minPossible}</p>
       <p>Maximum Possible: {maxPossible}</p>
 

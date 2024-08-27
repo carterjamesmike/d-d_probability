@@ -229,38 +229,43 @@ const HitRateCalculator = () => {
           </button>
         </div>
       </div>
-
-      <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={generateData()}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="ac"
-            label={{
-              value: "Armor Class",
-              position: "insideBottom",
-              offset: -5,
-            }}
-          />
-          <YAxis
-            label={{
-              value: "Cumulative Hit Rate (%)",
-              angle: -90,
-              position: "insideLeft",
-            }}
-          />
-          <Tooltip />
-          <Legend />
-          {Array.from({ length: attackCount }, (_, i) => (
-            <Line
-              key={i}
-              type="monotone"
-              dataKey={`hitRate${i + 1}`}
-              stroke={colors[i]}
-              name={`${i + 1}+ Hits`}
+      <div className="mt-4 p-4 border rounded">
+        <ResponsiveContainer width="100%" height={400}>
+          <LineChart data={generateData()}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="ac"
+              label={{
+                value: "Armor Class",
+                position: "insideBottom",
+                offset: -5,
+              }}
             />
-          ))}
-        </LineChart>
-      </ResponsiveContainer>
+            <YAxis
+              label={{
+                value: "Cumulative Hit Rate (%)",
+                angle: -90,
+                position: "insideLeft",
+              }}
+            />
+            <Tooltip />
+            <Legend
+              wrapperStyle={{
+                paddingTop: "5px"
+              }}
+            />
+            {Array.from({ length: attackCount }, (_, i) => (
+              <Line
+                key={i}
+                type="monotone"
+                dataKey={`hitRate${i + 1}`}
+                stroke={colors[i]}
+                name={`${i + 1}+ Hits`}
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
 
       <DamageSimulator
         diceCount={diceCount}
