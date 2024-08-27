@@ -1,89 +1,128 @@
 import React, { useState, useEffect } from "react";
 import {
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer,
 } from "recharts";
 
-const DamageSimulator = ({ diceCount, diceType, damageModifier }) => {
-  const [averageDamage, setAverageDamage] = useState(0);
-  const [minDamage, setMinDamage] = useState(0);
-  const [maxDamage, setMaxDamage] = useState(0);
-  const [minPossible, setMinPossible] = useState(0);
-  const [maxPossible, setMaxPossible] = useState(0);
+const DamageSimulator = ({ attacks }) => {
   const [damageData, setDamageData] = useState([]);
+  const [maxFrequencies, setMaxFrequencies] = useState([]);
 
-  const simulateRoll = () => {
+  const simulateRoll = (diceType) => {
     return Math.floor(Math.random() * diceType) + 1;
   };
 
-  const simulateDamage = (isCritical = false) => {
-    const diceRolls = Array(isCritical ? diceCount * 2 : diceCount)
-      .fill(0)
-      .map(() => simulateRoll());
-    return diceRolls.reduce((sum, roll) => sum + roll, 0) + damageModifier;
+  const simulateDamage = (attack, isCritical = false) => {
+    let totalDamage = 0;
+    attack.damages.forEach(damage => {
+      const diceCount = isCritical ? damage.diceCount * 2 : damage.diceCount;
+      const diceRolls = Array(diceCount).fill(0).map(() => simulateRoll(damage.diceType));
+      totalDamage += diceRolls.reduce((sum, roll) => sum + roll, 0) + damage.modifier;
+    });
+    return totalDamage;
   };
 
   useEffect(() => {
     const simulations = 100;
-    let totalDamage = 0;
-    let minDmg = Infinity;
-    let maxDmg = -Infinity;
-    const damageFrequency = {};
+    const damageFrequencies = attacks.map(() => ({}));
 
     for (let i = 0; i < simulations; i++) {
-      const isCritical = Math.random() < 0.05; // 5% chance of critical hit
-      const damage = simulateDamage(isCritical);
-      totalDamage += damage;
-      minDmg = Math.min(minDmg, damage);
-      maxDmg = Math.max(maxDmg, damage);
-      damageFrequency[damage] = (damageFrequency[damage] || 0) + 1;
+      attacks.forEach((attack, index) => {
+        const isCritical = Math.random() < 0.05; // 5% chance of critical hit
+        const damage = simulateDamage(attack, isCritical);
+        damageFrequencies[index][damage] = (damageFrequencies[index][damage] || 0) + 1;
+      });
     }
 
-    setAverageDamage(Number((totalDamage / simulations).toFixed(2)));
-    setMinDamage(minDmg);
-    setMaxDamage(maxDmg);
-    setMinPossible(diceCount + damageModifier);
-    setMaxPossible(diceCount * 2 * diceType + damageModifier);
+    // Combine all damage values that were rolled
+    const allDamageValues = new Set();
+    damageFrequencies.forEach(freq => {
+      Object.keys(freq).forEach(damage => allDamageValues.add(Number(damage)));
+    });
 
-    const newDamageData = Object.entries(damageFrequency).map(([damage, frequency]) => ({
-      damage: Number(damage),
-      frequency,
+    // Create data only for damage values that were rolled
+    const newDamageData = Array.from(allDamageValues).sort((a, b) => a - b).map(damage => ({
+      damage,
+      ...attacks.reduce((acc, _, index) => ({
+        ...acc,
+        [`frequency${index + 1}`]: damageFrequencies[index][damage] || 0
+      }), {})
     }));
-    newDamageData.sort((a, b) => a.damage - b.damage);
+
     setDamageData(newDamageData);
-  }, [diceCount, diceType, damageModifier]);
+
+    const maxFreqs = attacks.map((_, index) =>
+      Math.max(...newDamageData.map(d => d[`frequency${index + 1}`]))
+  );
+    setMaxFrequencies(maxFreqs);
+  },
+  [attacks]);
+
+  const colors = [
+    "#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#0088fe",
+    "#00C49F", "#FFBB28", "#FF8042", "#a4de6c", "#d0ed57"
+  ];
+
+  const renderDot = (attackIndex) => (props) => {
+    const { cx, cy, value } = props;
+    if (value === maxFrequencies[attackIndex]) {
+      return (
+        <circle 
+          cx={cx} 
+          cy={cy} 
+          r={4} 
+          fill={colors[attackIndex % colors.length]} 
+          stroke="white"
+        />
+      );
+    }
+    return null;
+  };
 
   return (
-    <div className="mt-4 p-4 border rounded">
-      <h3 className="text-xl font-bold mb-2">Damage Simulation (100 rolls)</h3>
-      <p>Average Rolled: {averageDamage}</p>
-      <p>Minimum Rolled: {minDamage}</p>
-      <p>Maximum Rolled: {maxDamage}</p>
-      <p>Minimum Possible: {minPossible}</p>
-      <p>Maximum Possible: {maxPossible}</p>
+    <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #ccc', borderRadius: '0.25rem' }}>
+      <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Damage Simulation (100 rolls)</h3>
 
       <div style={{ width: '100%', height: 400 }}>
         <ResponsiveContainer>
-          <AreaChart
+          <LineChart
             data={damageData}
             margin={{
-              top: 10,
+              top: 5,
               right: 30,
-              left: 0,
-              bottom: 0,
+              left: 20,
+              bottom: 5,
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="damage" />
-            <YAxis />
+            <XAxis 
+              dataKey="damage" 
+              label={{ value: "Total Damage", position: "insideBottomRight", offset: -10 }}
+              type="number"
+              domain={['dataMin', 'dataMax']}
+            />
+            <YAxis 
+              label={{ value: "Frequency", angle: -90, position: "insideLeft" }}
+            />
             <Tooltip />
-            <Area type="monotone" dataKey="frequency" stroke="#8884d8" fill="#8884d8" />
-          </AreaChart>
+            <Legend />
+            {attacks.map((attack, index) => (
+              <Line
+                key={index}
+                type="monotone"
+                dataKey={`frequency${index + 1}`}
+                stroke={colors[index % colors.length]}
+                name={attack.name || `Attack ${index + 1}`}
+                dot={renderDot(index)}
+              />
+            ))}
+          </LineChart>
         </ResponsiveContainer>
       </div>
     </div>
