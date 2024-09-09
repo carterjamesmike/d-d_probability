@@ -119,8 +119,6 @@ const HitRateCalculator = () => {
   };
 
   const binomialProbability = (n, k, probabilities) => {
-    // This function needs to be updated to handle multiple probabilities
-    // This is a simplified version and may not be entirely accurate for multiple attacks
     const avgProbability =
       probabilities.reduce((a, b) => a + b, 0) / probabilities.length;
     return (
